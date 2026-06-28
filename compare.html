@@ -1,280 +1,229 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>点前比較</title>
+<meta charset="UTF-8">
+<title>点前比較</title>
 
-  <style>
-    body {
-      font-family: sans-serif;
-      margin: 0;
-      padding: 12px;
-      background: #f7f7f7;
-    }
+<style>
+body {
+  margin: 0;
+  font-family: sans-serif;
+}
 
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 12px;
-    }
+header {
+  padding: 10px;
+  background: #333;
+  color: white;
+}
 
-    a {
-      text-decoration: none;
-      color: #333;
-      font-size: 14px;
-    }
+.container {
+  display: flex;
+  height: calc(100vh - 50px);
+}
 
-    h1 {
-      font-size: 18px;
-      margin: 0;
-    }
+.panel {
+  flex: 1;
+  overflow-y: auto;
+  border-right: 1px solid #ddd;
+  padding: 10px;
+}
 
-    .controls {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 12px;
-      flex-wrap: wrap;
-    }
+.step {
+  padding: 10px;
+  margin-bottom: 8px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  background: #fff;
+}
 
-    select, button {
-      padding: 6px;
-      font-size: 14px;
-    }
+.diff {
+  background: #ffe5e5;
+  border-left: 4px solid red;
+}
 
-    label {
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
+.hidden {
+  display: none;
+}
 
-    .wrap {
-      display: flex;
-      gap: 10px;
-    }
+/* モーダル */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+}
 
-    .box {
-      flex: 1;
-      background: white;
-      padding: 10px;
-      border-radius: 8px;
-      height: 70vh;
-      overflow-y: auto;
-    }
-
-    .step {
-      padding: 6px;
-      border-bottom: 1px solid #eee;
-      font-size: 14px;
-      cursor: pointer;
-    }
-
-    .step small {
-      display: block;
-      color: #666;
-      font-size: 12px;
-    }
-
-    .diff {
-      background: #ffe5e5;
-      border-left: 4px solid #ff4d4d;
-    }
-
-    /* モーダル */
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.5);
-    }
-
-    .modal-content {
-      background: white;
-      margin: 20% auto;
-      padding: 16px;
-      width: 80%;
-      border-radius: 10px;
-    }
-  </style>
+.modal-content {
+  background: white;
+  width: 400px;
+  margin: 100px auto;
+  padding: 20px;
+  border-radius: 8px;
+}
+</style>
 </head>
 
 <body>
 
 <header>
-  <h1>点前比較</h1>
-  <a href="index.html">← ホーム</a>
+  <select id="leftSelect"></select>
+  vs
+  <select id="rightSelect"></select>
+
+  <label style="margin-left:10px;">
+    <input type="checkbox" id="diffOnly"> 違いだけ表示
+  </label>
 </header>
 
-<div class="controls">
-  <select id="left"></select>
-  <select id="right"></select>
-
-  <label>
-    <input type="checkbox" id="diffOnly" onchange="render()">
-    違いだけ表示
-  </label>
-
-  <button onclick="render()">比較</button>
-</div>
-
-<div class="wrap">
-  <div class="box" id="leftView"></div>
-  <div class="box" id="rightView"></div>
+<div class="container">
+  <div id="leftPanel" class="panel"></div>
+  <div id="rightPanel" class="panel"></div>
 </div>
 
 <!-- モーダル -->
-<div id="modal" class="modal" onclick="closeModal()">
-  <div class="modal-content" onclick="event.stopPropagation()">
+<div id="modal" class="modal">
+  <div class="modal-content">
     <h3 id="modalTitle"></h3>
     <p id="modalText"></p>
-    <small id="modalNote" style="color:#c00;"></small>
-    <br><br>
-    <button onclick="closeModal()">閉じる</button>
+
+    <label>差分理由（note）</label>
+    <textarea id="modalNote" style="width:100%;height:120px;"></textarea>
+
+    <div style="margin-top:10px;">
+      <button onclick="saveNote()">保存</button>
+      <button onclick="closeModal()">閉じる</button>
+    </div>
   </div>
 </div>
 
 <script>
-const temaeData = {
-  hira: {
-    name: "薄茶・平点前",
+// ======================
+// データ
+// ======================
+let data = [
+  {
+    name: "平点前",
     steps: [
-      { id: 1, title: "席入り", text: "茶室に入る" },
-      { id: 2, title: "茶碗を清める", text: "茶碗を拭く", note: "丸卓や棚点前では省略されることがある" },
-      { id: 3, title: "茶筅通し", text: "茶筅を温める" },
-      { id: 4, title: "抹茶を入れる", text: "茶杓で抹茶をすくう", note: "丸卓では手順が簡略化される" },
-      { id: 5, title: "点てる", text: "茶を点てる" }
+      { id: "a1", title: "茶碗を出す", text: "茶碗を清めて出す", note: "" },
+      { id: "a2", title: "柄杓を持つ", text: "柄杓を構える", note: "" },
+      { id: "a3", title: "茶を点てる", text: "茶を点てる", note: "" }
     ]
   },
-
-  maru: {
-    name: "薄茶・丸卓",
+  {
+    name: "丸卓",
     steps: [
-      { id: 1, title: "席入り", text: "茶室に入る" },
-      { id: 2, title: "茶碗を清める", text: "茶碗を拭く" },
-      { id: 3, title: "茶筅通し", text: "茶筅を温める" },
-      { id: 4, title: "抹茶を入れる", text: "丸卓では手順が異なる", note: "平点前と動作順が異なる" },
-      { id: 5, title: "点てる", text: "茶を点てる" }
-    ]
-  },
-
-  tana: {
-    name: "薄茶・棚点前",
-    steps: [
-      { id: 1, title: "席入り", text: "茶室に入る" },
-      { id: 2, title: "道具確認", text: "棚を確認する", note: "棚構成により手順が変化" },
-      { id: 3, title: "茶碗を清める", text: "茶碗を拭く" },
-      { id: 4, title: "抹茶を入れる", text: "棚仕様の流れで入れる" },
-      { id: 5, title: "点てる", text: "茶を点てる" }
+      { id: "b1", title: "茶碗を出す", text: "茶碗を清めて出す", note: "" },
+      { id: "b2", title: "柄杓を持つ", text: "柄杓の扱いが異なる", note: "" },
+      { id: "b3", title: "茶を点てる", text: "茶を点てる", note: "丸卓では位置が違う" }
     ]
   }
-};
+];
 
-/* 初期化 */
+// ======================
+// 状態
+// ======================
+let currentStep = null;
+
+const leftPanel = document.getElementById("leftPanel");
+const rightPanel = document.getElementById("rightPanel");
+
+const leftSelect = document.getElementById("leftSelect");
+const rightSelect = document.getElementById("rightSelect");
+
+const diffOnly = document.getElementById("diffOnly");
+
+// ======================
+// 初期化
+// ======================
 function init() {
-  const left = document.getElementById("left");
-  const right = document.getElementById("right");
+  loadFromLocal();
 
-  Object.keys(temaeData).forEach(key => {
+  data.forEach((t, i) => {
     const opt1 = document.createElement("option");
-    opt1.value = key;
-    opt1.textContent = temaeData[key].name;
-    left.appendChild(opt1);
+    opt1.value = i;
+    opt1.textContent = t.name;
+    leftSelect.appendChild(opt1);
 
     const opt2 = document.createElement("option");
-    opt2.value = key;
-    opt2.textContent = temaeData[key].name;
-    right.appendChild(opt2);
+    opt2.value = i;
+    opt2.textContent = t.name;
+    rightSelect.appendChild(opt2);
   });
 
-  left.value = "hira";
-  right.value = "maru";
+  leftSelect.value = 0;
+  rightSelect.value = 1;
 
-  render();
+  leftSelect.onchange = render;
+  rightSelect.onchange = render;
+  diffOnly.onchange = render;
+
   setupScrollSync();
+  render();
 }
 
-/* 描画 */
+// ======================
+// 描画
+// ======================
 function render() {
-  const l = document.getElementById("left").value;
-  const r = document.getElementById("right").value;
-  const diffOnly = document.getElementById("diffOnly")?.checked || false;
+  const left = data[leftSelect.value];
+  const right = data[rightSelect.value];
 
-  const leftData = temaeData[l];
-  const rightData = temaeData[r];
+  leftPanel.innerHTML = "";
+  rightPanel.innerHTML = "";
 
-  const maxLen = Math.max(leftData.steps.length, rightData.steps.length);
+  const max = Math.max(left.steps.length, right.steps.length);
 
-  let leftHTML = "";
-  let rightHTML = "";
+  for (let i = 0; i < max; i++) {
+    const l = left.steps[i];
+    const r = right.steps[i];
 
-  for (let i = 0; i < maxLen; i++) {
-    const ls = leftData.steps[i];
-    const rs = rightData.steps[i];
+    const diff = !l || !r || l.title !== r.title || l.text !== r.text;
 
-    const isDiff =
-      !ls || !rs ||
-      ls.title !== rs.title ||
-      ls.text !== rs.text;
+    if (diffOnly.checked && !diff) continue;
 
-    if (diffOnly && !isDiff) continue;
-
-    if (ls) {
-      leftHTML += `
-        <div class="step ${isDiff ? "diff" : ""}"
-             onclick='openModal(${JSON.stringify(ls)})'>
-          ${ls.id}. ${ls.title}
-          <small>${ls.text}</small>
-          ${ls.note ? `<small style="color:#c00;">理由: ${ls.note}</small>` : ""}
-        </div>`;
+    // 左
+    if (l) {
+      const divL = createStep(l, diff);
+      leftPanel.appendChild(divL);
     }
 
-    if (rs) {
-      rightHTML += `
-        <div class="step ${isDiff ? "diff" : ""}"
-             onclick='openModal(${JSON.stringify(rs)})'>
-          ${rs.id}. ${rs.title}
-          <small>${rs.text}</small>
-          ${rs.note ? `<small style="color:#c00;">理由: ${rs.note}</small>` : ""}
-        </div>`;
+    // 右
+    if (r) {
+      const divR = createStep(r, diff);
+      rightPanel.appendChild(divR);
     }
   }
-
-  document.getElementById("leftView").innerHTML = leftHTML;
-  document.getElementById("rightView").innerHTML = rightHTML;
 }
 
-/* スクロール同期 */
-function setupScrollSync() {
-  const leftView = document.getElementById("leftView");
-  const rightView = document.getElementById("rightView");
+// ======================
+// ステップ生成
+// ======================
+function createStep(step, isDiff) {
+  const div = document.createElement("div");
+  div.className = "step";
 
-  let syncing = false;
+  if (isDiff) div.classList.add("diff");
 
-  leftView.addEventListener("scroll", () => {
-    if (syncing) return;
-    syncing = true;
-    rightView.scrollTop = leftView.scrollTop;
-    syncing = false;
-  });
+  div.innerHTML = `<b>${step.title}</b><br>${step.text}`;
 
-  rightView.addEventListener("scroll", () => {
-    if (syncing) return;
-    syncing = true;
-    leftView.scrollTop = rightView.scrollTop;
-    syncing = false;
-  });
+  div.onclick = () => openModal(step);
+
+  return div;
 }
 
-/* モーダル */
-function openModal(data) {
-  document.getElementById("modalTitle").textContent = data.title;
-  document.getElementById("modalText").textContent = data.text;
-  document.getElementById("modalNote").textContent = data.note ? "理由: " + data.note : "";
+// ======================
+// モーダル
+// ======================
+function openModal(step) {
+  currentStep = step;
+
+  document.getElementById("modalTitle").innerText = step.title;
+  document.getElementById("modalText").innerText = step.text;
+  document.getElementById("modalNote").value = step.note || "";
+
   document.getElementById("modal").style.display = "block";
 }
 
@@ -282,7 +231,53 @@ function closeModal() {
   document.getElementById("modal").style.display = "none";
 }
 
-document.addEventListener("DOMContentLoaded", init);
+function saveNote() {
+  if (!currentStep) return;
+
+  currentStep.note = document.getElementById("modalNote").value;
+
+  render();
+  saveToLocal();
+  closeModal();
+}
+
+// ======================
+// スクロール同期
+// ======================
+function setupScrollSync() {
+  let lock = false;
+
+  leftPanel.onscroll = () => {
+    if (lock) return;
+    lock = true;
+    rightPanel.scrollTop = leftPanel.scrollTop;
+    lock = false;
+  };
+
+  rightPanel.onscroll = () => {
+    if (lock) return;
+    lock = true;
+    leftPanel.scrollTop = rightPanel.scrollTop;
+    lock = false;
+  };
+}
+
+// ======================
+// 保存
+// ======================
+function saveToLocal() {
+  localStorage.setItem("temaeData", JSON.stringify(data));
+}
+
+function loadFromLocal() {
+  const saved = localStorage.getItem("temaeData");
+  if (saved) {
+    data = JSON.parse(saved);
+  }
+}
+
+// ======================
+init();
 </script>
 
 </body>
