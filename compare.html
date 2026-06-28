@@ -66,6 +66,12 @@
       color: #666;
       font-size: 12px;
     }
+
+    /* ⭐差分ハイライト */
+    .diff {
+      background: #ffe5e5;
+      border-left: 4px solid #ff4d4d;
+    }
   </style>
 </head>
 
@@ -152,19 +158,42 @@ function render() {
   const leftData = temaeData[l];
   const rightData = temaeData[r];
 
-  document.getElementById("leftView").innerHTML =
-    leftData.steps.map(s =>
-      `<div class="step">${s.id}. ${s.title}<small>${s.text}</small></div>`
-    ).join("");
+  const maxLen = Math.max(leftData.steps.length, rightData.steps.length);
 
-  document.getElementById("rightView").innerHTML =
-    rightData.steps.map(s =>
-      `<div class="step">${s.id}. ${s.title}<small>${s.text}</small></div>`
-    ).join("");
+  let leftHTML = "";
+  let rightHTML = "";
+
+  for (let i = 0; i < maxLen; i++) {
+    const ls = leftData.steps[i];
+    const rs = rightData.steps[i];
+
+    const leftDiff =
+      !rs || ls.title !== rs.title || ls.text !== rs.text;
+
+    const rightDiff =
+      !ls || ls.title !== rs.title || ls.text !== rs.text;
+
+    leftHTML += ls
+      ? `<div class="step ${leftDiff ? "diff" : ""}">
+          ${ls.id}. ${ls.title}
+          <small>${ls.text}</small>
+        </div>`
+      : "";
+
+    rightHTML += rs
+      ? `<div class="step ${rightDiff ? "diff" : ""}">
+          ${rs.id}. ${rs.title}
+          <small>${rs.text}</small>
+        </div>`
+      : "";
+  }
+
+  document.getElementById("leftView").innerHTML = leftHTML;
+  document.getElementById("rightView").innerHTML = rightHTML;
 }
 
 document.addEventListener("DOMContentLoaded", init);
 </script>
 
 </body>
-</html> 
+</html>
