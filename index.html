@@ -1,73 +1,66 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="manifest" href="manifest.json?v=2">
-<meta name="theme-color" content="#2e5d34">
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>表千家 点前帳</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<style>
-  body {
-    font-family: sans-serif;
-    background: #f8f4e8;
-    margin: 0;
-    padding: 20px;
-  }
+  <title>茶道アプリ</title>
 
-  h1 {
-    text-align: center;
-    color: #2e5d34;
-  }
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2e5d34">
 
-  .btn {
-    display: block;
-    width: 100%;
-    padding: 15px;
-    margin: 10px 0;
-    background: #2e5d34;
-    color: white;
-    text-align: center;
-    border-radius: 12px;
-    text-decoration: none;
-    font-size: 18px;
-  }
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f8f4e8;
+      margin: 0;
+      padding: 20px;
+    }
 
-  .btn:active {
-    transform: scale(0.98);
-  }
-</style>
+    h1 {
+      text-align: center;
+      color: #2e5d34;
+      margin-bottom: 20px;
+    }
 
+    .menu {
+      margin-top: 20px;
+    }
+
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 15px;
+      margin: 10px 0;
+      background: #2e5d34;
+      color: white;
+      text-align: center;
+      border-radius: 12px;
+      text-decoration: none;
+      font-size: 18px;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+  </style>
 </head>
 
 <body>
 
-<header>
-🍵 表千家 点前帳
-</header>
-<a class="btn" href="#">お点前を見る</a>
-<a class="btn" href="#">道具一覧</a>
-<a class="btn" href="#">稽古記録</a>
-<div class="container">
+  <h1>茶道アプリ</h1>
 
-<div class="card">
-📖 点前
-</div>
+  <div class="menu">
+    <a class="btn" href="#">お点前を見る</a>
+    <a class="btn" href="#">道具一覧</a>
+    <a class="btn" href="#">稽古記録</a>
+  </div>
 
-<div class="card">
-📚 道具辞典
-</div>
-
-<div class="card">
-📝 お稽古ノート
-</div>
-
-<div class="card">
-⭐ お気に入り
-</div>
-
-</div>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("service-worker.js");
+    }
+  </script>
 
 </body>
 </html>
