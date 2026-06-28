@@ -35,11 +35,19 @@
       display: flex;
       gap: 8px;
       margin-bottom: 12px;
+      flex-wrap: wrap;
     }
 
     select, button {
       padding: 6px;
       font-size: 14px;
+    }
+
+    label {
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
 
     .wrap {
@@ -52,7 +60,8 @@
       background: white;
       padding: 10px;
       border-radius: 8px;
-      min-height: 300px;
+      height: 70vh;
+      overflow-y: auto;
     }
 
     .step {
@@ -71,8 +80,6 @@
       background: #ffe5e5;
       border-left: 4px solid #ff4d4d;
     }
-
-    /* UIはCSSじゃなくHTMLへ */
   </style>
 </head>
 
@@ -87,7 +94,7 @@
   <select id="left"></select>
   <select id="right"></select>
 
-  <label style="font-size:12px;">
+  <label>
     <input type="checkbox" id="diffOnly" onchange="render()">
     違いだけ表示
   </label>
@@ -156,12 +163,13 @@ function init() {
   right.value = "maru";
 
   render();
+  setupScrollSync();
 }
 
 function render() {
   const l = document.getElementById("left").value;
   const r = document.getElementById("right").value;
-  const diffOnly = document.getElementById("diffOnly").checked;
+  const diffOnly = document.getElementById("diffOnly")?.checked || false;
 
   const leftData = temaeData[l];
   const rightData = temaeData[r];
@@ -183,22 +191,48 @@ function render() {
     if (diffOnly && !isDiff) continue;
 
     if (ls) {
-      leftHTML += `<div class="step ${isDiff ? "diff" : ""}">
-        ${ls.id}. ${ls.title}
-        <small>${ls.text}</small>
-      </div>`;
+      leftHTML += `
+        <div class="step ${isDiff ? "diff" : ""}">
+          ${ls.id}. ${ls.title}
+          <small>${ls.text}</small>
+        </div>`;
     }
 
     if (rs) {
-      rightHTML += `<div class="step ${isDiff ? "diff" : ""}">
-        ${rs.id}. ${rs.title}
-        <small>${rs.text}</small>
-      </div>`;
+      rightHTML += `
+        <div class="step ${isDiff ? "diff" : ""}">
+          ${rs.id}. ${rs.title}
+          <small>${rs.text}</small>
+        </div>`;
     }
   }
 
   document.getElementById("leftView").innerHTML = leftHTML;
   document.getElementById("rightView").innerHTML = rightHTML;
+}
+
+/* =========================
+   スクロール同期
+========================= */
+function setupScrollSync() {
+  const leftView = document.getElementById("leftView");
+  const rightView = document.getElementById("rightView");
+
+  let syncing = false;
+
+  leftView.addEventListener("scroll", () => {
+    if (syncing) return;
+    syncing = true;
+    rightView.scrollTop = leftView.scrollTop;
+    syncing = false;
+  });
+
+  rightView.addEventListener("scroll", () => {
+    if (syncing) return;
+    syncing = true;
+    leftView.scrollTop = rightView.scrollTop;
+    syncing = false;
+  });
 }
 
 document.addEventListener("DOMContentLoaded", init);
