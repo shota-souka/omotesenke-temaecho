@@ -7,70 +7,74 @@
 
   <style>
     body {
-  font-family: sans-serif;
-  margin: 0;
-  padding: 10px;
-  background: #f7f7f7;
-}
+      font-family: sans-serif;
+      margin: 0;
+      padding: 10px;
+      background: #f7f7f7;
+    }
 
-h1 {
-  font-size: 18px;
-  text-align: center;
-  margin: 8px 0;
-}
+    h1 {
+      font-size: 18px;
+      text-align: center;
+      margin: 8px 0;
+    }
 
-#modeBtn {
-  width: 100%;
-  padding: 10px;
-  font-size: 15px;
-  border: none;
-  border-radius: 10px;
-  background: #333;
-  color: white;
-  margin-bottom: 10px;
-}
+    #modeBtn {
+      width: 100%;
+      padding: 10px;
+      font-size: 15px;
+      border: none;
+      border-radius: 10px;
+      background: #333;
+      color: white;
+      margin-bottom: 10px;
+    }
 
-/* ★ここがポイント：2列維持 */
-#container {
-  display: flex;
-  gap: 8px;
-}
+    #container {
+      display: flex;
+      gap: 8px;
+    }
 
-.column {
-  flex: 1;
-  max-width: 50%;
-  background: white;
-  border-radius: 10px;
-  padding: 10px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-  overflow-wrap: break-word;
-}
+    .column {
+      flex: 1;
+      max-width: 50%;
+      background: white;
+      border-radius: 10px;
+      padding: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
 
-h2 {
-  font-size: 14px;
-  margin: 6px 0;
-}
+      /* ★スクロール領域 */
+      height: 80vh;
+      overflow-y: auto;
 
-.step {
-  padding: 8px;
-  border-bottom: 1px solid #eee;
-}
+      overflow-wrap: break-word;
+    }
 
-.step strong {
-  display: block;
-  font-size: 13px;
-  margin-bottom: 2px;
-}
+    h2 {
+      font-size: 14px;
+      margin: 6px 0;
+    }
 
-.step div {
-  font-size: 12px;
-  color: #333;
-}
+    .step {
+      padding: 8px;
+      border-bottom: 1px solid #eee;
+    }
 
-.diff {
-  background: #ffe5e5;
-  border-radius: 6px;
-}
+    .step strong {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 2px;
+    }
+
+    .step div {
+      font-size: 12px;
+      color: #333;
+    }
+
+    .diff {
+      background: #ffe5e5;
+      border-radius: 6px;
+    }
   </style>
 </head>
 
@@ -166,6 +170,38 @@ h2 {
     };
 
     render();
+
+    // =========================
+    // スクロール同期
+    // =========================
+
+    const left = document.getElementById("left");
+    const right = document.getElementById("right");
+
+    let isSyncingLeft = false;
+    let isSyncingRight = false;
+
+    left.addEventListener("scroll", () => {
+      if (isSyncingLeft) return;
+
+      isSyncingRight = true;
+      right.scrollTop = left.scrollTop;
+
+      setTimeout(() => {
+        isSyncingRight = false;
+      }, 10);
+    });
+
+    right.addEventListener("scroll", () => {
+      if (isSyncingRight) return;
+
+      isSyncingLeft = true;
+      left.scrollTop = right.scrollTop;
+
+      setTimeout(() => {
+        isSyncingLeft = false;
+      }, 10);
+    });
   </script>
 
 </body>
