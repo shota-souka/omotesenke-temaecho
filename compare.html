@@ -16,6 +16,10 @@ header {
   color: white;
 }
 
+header input, header select {
+  padding: 4px;
+}
+
 .container {
   display: flex;
   height: calc(100vh - 50px);
@@ -45,7 +49,7 @@ header {
   display: none;
 }
 
-/* モーダル */
+/* modal */
 .modal {
   display: none;
   position: fixed;
@@ -58,7 +62,7 @@ header {
 
 .modal-content {
   background: white;
-  width: 400px;
+  width: 420px;
   margin: 100px auto;
   padding: 20px;
   border-radius: 8px;
@@ -76,6 +80,8 @@ header {
   <label style="margin-left:10px;">
     <input type="checkbox" id="diffOnly"> 違いだけ表示
   </label>
+
+  <input id="searchBox" placeholder="差分検索（例：柄杓）" />
 </header>
 
 <div class="container">
@@ -83,7 +89,7 @@ header {
   <div id="rightPanel" class="panel"></div>
 </div>
 
-<!-- モーダル -->
+<!-- modal -->
 <div id="modal" class="modal">
   <div class="modal-content">
     <h3 id="modalTitle"></h3>
@@ -123,10 +129,9 @@ let data = [
 ];
 
 // ======================
-// 状態
-// ======================
 let currentStep = null;
 
+// ======================
 const leftPanel = document.getElementById("leftPanel");
 const rightPanel = document.getElementById("rightPanel");
 
@@ -134,23 +139,22 @@ const leftSelect = document.getElementById("leftSelect");
 const rightSelect = document.getElementById("rightSelect");
 
 const diffOnly = document.getElementById("diffOnly");
+const searchBox = document.getElementById("searchBox");
 
-// ======================
-// 初期化
 // ======================
 function init() {
   loadFromLocal();
 
   data.forEach((t, i) => {
-    const opt1 = document.createElement("option");
-    opt1.value = i;
-    opt1.textContent = t.name;
-    leftSelect.appendChild(opt1);
+    const o1 = document.createElement("option");
+    o1.value = i;
+    o1.textContent = t.name;
+    leftSelect.appendChild(o1);
 
-    const opt2 = document.createElement("option");
-    opt2.value = i;
-    opt2.textContent = t.name;
-    rightSelect.appendChild(opt2);
+    const o2 = document.createElement("option");
+    o2.value = i;
+    o2.textContent = t.name;
+    rightSelect.appendChild(o2);
   });
 
   leftSelect.value = 0;
@@ -159,17 +163,18 @@ function init() {
   leftSelect.onchange = render;
   rightSelect.onchange = render;
   diffOnly.onchange = render;
+  searchBox.oninput = render;
 
   setupScrollSync();
   render();
 }
 
 // ======================
-// 描画
-// ======================
 function render() {
   const left = data[leftSelect.value];
   const right = data[rightSelect.value];
+
+  const keyword = searchBox.value.trim().toLowerCase();
 
   leftPanel.innerHTML = "";
   rightPanel.innerHTML = "";
@@ -180,26 +185,40 @@ function render() {
     const l = left.steps[i];
     const r = right.steps[i];
 
-    const diff = !l || !r || l.title !== r.title || l.text !== r.text;
+    const diff =
+      !l ||
+      !r ||
+      l.title !== r.title ||
+      l.text !== r.text;
 
-    if (diffOnly.checked && !diff) continue;
+    const match = (s) => {
+      if (!s) return false;
+      if (!keyword) return true;
 
-    // 左
-    if (l) {
-      const divL = createStep(l, diff);
-      leftPanel.appendChild(divL);
+      return (
+        s.title.toLowerCase().includes(keyword) ||
+        s.text.toLowerCase().includes(keyword) ||
+        (s.note || "").toLowerCase().includes(keyword)
+      );
+    };
+
+    if (diffOnly.checked && !diff && !keyword) continue;
+
+    const lMatch = match(l);
+    const rMatch = match(r);
+
+    if (keyword && !lMatch && !rMatch) continue;
+
+    if (l && lMatch) {
+      leftPanel.appendChild(createStep(l, diff));
     }
 
-    // 右
-    if (r) {
-      const divR = createStep(r, diff);
-      rightPanel.appendChild(divR);
+    if (r && rMatch) {
+      rightPanel.appendChild(createStep(r, diff));
     }
   }
 }
 
-// ======================
-// ステップ生成
 // ======================
 function createStep(step, isDiff) {
   const div = document.createElement("div");
@@ -215,8 +234,6 @@ function createStep(step, isDiff) {
 }
 
 // ======================
-// モーダル
-// ======================
 function openModal(step) {
   currentStep = step;
 
@@ -231,18 +248,17 @@ function closeModal() {
   document.getElementById("modal").style.display = "none";
 }
 
+// ======================
 function saveNote() {
   if (!currentStep) return;
 
   currentStep.note = document.getElementById("modalNote").value;
 
-  render();
   saveToLocal();
+  render();
   closeModal();
 }
 
-// ======================
-// スクロール同期
 // ======================
 function setupScrollSync() {
   let lock = false;
@@ -262,8 +278,6 @@ function setupScrollSync() {
   };
 }
 
-// ======================
-// 保存
 // ======================
 function saveToLocal() {
   localStorage.setItem("temaeData", JSON.stringify(data));
