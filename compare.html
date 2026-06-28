@@ -67,16 +67,12 @@
       font-size: 12px;
     }
 
-    /* ⭐差分ハイライト */
     .diff {
       background: #ffe5e5;
       border-left: 4px solid #ff4d4d;
     }
 
-    <label style="font-size:12px;">
-  <input type="checkbox" id="diffOnly" onchange="render()">
-  違いだけ表示
-</label>
+    /* UIはCSSじゃなくHTMLへ */
   </style>
 </head>
 
@@ -90,6 +86,12 @@
 <div class="controls">
   <select id="left"></select>
   <select id="right"></select>
+
+  <label style="font-size:12px;">
+    <input type="checkbox" id="diffOnly" onchange="render()">
+    違いだけ表示
+  </label>
+
   <button onclick="render()">比較</button>
 </div>
 
@@ -154,6 +156,8 @@ function init() {
   right.value = "maru";
 
   render();
+}
+
 function render() {
   const l = document.getElementById("left").value;
   const r = document.getElementById("right").value;
@@ -176,22 +180,21 @@ function render() {
       ls.title !== rs.title ||
       ls.text !== rs.text;
 
-    // 👉 違いだけ表示モードならスキップ
     if (diffOnly && !isDiff) continue;
 
-    leftHTML += ls
-      ? `<div class="step ${isDiff ? "diff" : ""}">
-          ${ls.id}. ${ls.title}
-          <small>${ls.text}</small>
-        </div>`
-      : "";
+    if (ls) {
+      leftHTML += `<div class="step ${isDiff ? "diff" : ""}">
+        ${ls.id}. ${ls.title}
+        <small>${ls.text}</small>
+      </div>`;
+    }
 
-    rightHTML += rs
-      ? `<div class="step ${isDiff ? "diff" : ""}">
-          ${rs.id}. ${rs.title}
-          <small>${rs.text}</small>
-        </div>`
-      : "";
+    if (rs) {
+      rightHTML += `<div class="step ${isDiff ? "diff" : ""}">
+        ${rs.id}. ${rs.title}
+        <small>${rs.text}</small>
+      </div>`;
+    }
   }
 
   document.getElementById("leftView").innerHTML = leftHTML;
