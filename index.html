@@ -53,47 +53,42 @@
   </div>
 
   <script>
-    // データ（まずは簡易版）
     const data = {
-      name: "薄茶・平点前",
-      steps: [
-        { id: 1, title: "席入り", text: "茶室に入り、客座に着く" },
-        { id: 2, title: "茶碗を清める", text: "茶碗を拭く" },
-        { id: 3, title: "茶筅通し", text: "茶筅を湯で温める" },
-        { id: 4, title: "抹茶を入れる", text: "茶杓で抹茶をすくう" },
-        { id: 5, title: "点てる", text: "茶を点てる" },
-        { id: 6, title: "客へ出す", text: "茶碗を客に出す" }
-      ]
-    };
+  name: "薄茶・平点前",
+  steps: [
+    { id: 1, title: "席入り", text: "茶室に入り、客座に着く" },
+    { id: 2, title: "茶碗を清める", text: "茶碗を拭く" },
+    { id: 3, title: "茶筅通し", text: "茶筅を湯で温める" },
+    { id: 4, title: "抹茶を入れる", text: "茶杓で抹茶をすくう" },
+    { id: 5, title: "点てる", text: "茶を点てる" },
+    { id: 6, title: "客へ出す", text: "茶碗を客に出す" }
+  ]
+};
 
-    let index = 0;
+document.getElementById("title").textContent = data.name;
 
-    const titleEl = document.getElementById("title");
-    const stepInfoEl = document.getElementById("stepInfo");
-    const stepTitleEl = document.getElementById("stepTitle");
-    const stepTextEl = document.getElementById("stepText");
-    const nextBtn = document.getElementById("nextBtn");
+const container = document.getElementById("card");
 
-    function render() {
-      const step = data.steps[index];
+// 一旦中身クリア
+container.innerHTML = "";
 
-      titleEl.textContent = data.name;
-      stepInfoEl.textContent = `${index + 1} / ${data.steps.length}`;
-      stepTitleEl.textContent = step.title;
-      stepTextEl.textContent = step.text;
+// ステップを全部表示
+data.steps.forEach(step => {
+  const div = document.createElement("div");
+  div.style.border = "1px solid #ddd";
+  div.style.borderRadius = "10px";
+  div.style.padding = "12px";
+  div.style.marginBottom = "12px";
+  div.style.textAlign = "left";
 
-      // 最後ならボタン無効化
-      nextBtn.disabled = index === data.steps.length - 1;
-    }
+  div.innerHTML = `
+    <strong>${step.id}. ${step.title}</strong>
+    <p>${step.text}</p>
+  `;
 
-    nextBtn.onclick = () => {
-      if (index < data.steps.length - 1) {
-        index++;
-        render();
-      }
-    };
+  container.appendChild(div);
+});
 
-    render();
   </script>
 
 </body>
