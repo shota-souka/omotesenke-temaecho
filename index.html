@@ -1,67 +1,99 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>茶道アプリ</title>
-
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#2e5d34">
 
   <style>
     body {
       font-family: sans-serif;
-      background: #f8f4e8;
-      margin: 0;
+      text-align: center;
+      padding: 24px;
+    }
+
+    #card {
+      margin-top: 40px;
       padding: 20px;
-      text-align: center;
-    }
-
-    h1 {
-      color: #2e5d34;
-      font-size: 32px;
-      margin: 20px 0 30px 0;
-      font-weight: bold;
-    }
-
-    .menu {
-      margin-top: 10px;
-    }
-
-    .btn {
-      display: block;
-      width: 100%;
-      padding: 15px;
-      margin: 12px 0;
-      background: #2e5d34;
-      color: white;
-      text-align: center;
+      border: 1px solid #ddd;
       border-radius: 12px;
-      text-decoration: none;
-      font-size: 18px;
     }
 
-    .btn:active {
-      transform: scale(0.98);
+    #stepInfo {
+      color: #666;
+      margin-bottom: 10px;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      background: #333;
+      color: white;
+    }
+
+    button:disabled {
+      background: #aaa;
     }
   </style>
 </head>
 
 <body>
 
-  <h1>茶道アプリ</h1>
+  <h1 id="title">読み込み中...</h1>
 
-  <div class="menu">
-    <a class="btn" href="#">お点前を見る</a>
-    <a class="btn" href="#">道具一覧</a>
-    <a class="btn" href="#">稽古記録</a>
+  <div id="card">
+    <div id="stepInfo"></div>
+    <h2 id="stepTitle"></h2>
+    <p id="stepText"></p>
+
+    <button id="nextBtn">次へ</button>
   </div>
 
   <script>
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("service-worker.js");
+    // データ（まずは簡易版）
+    const data = {
+      name: "薄茶・平点前",
+      steps: [
+        { id: 1, title: "席入り", text: "茶室に入り、客座に着く" },
+        { id: 2, title: "茶碗を清める", text: "茶碗を拭く" },
+        { id: 3, title: "茶筅通し", text: "茶筅を湯で温める" },
+        { id: 4, title: "抹茶を入れる", text: "茶杓で抹茶をすくう" },
+        { id: 5, title: "点てる", text: "茶を点てる" },
+        { id: 6, title: "客へ出す", text: "茶碗を客に出す" }
+      ]
+    };
+
+    let index = 0;
+
+    const titleEl = document.getElementById("title");
+    const stepInfoEl = document.getElementById("stepInfo");
+    const stepTitleEl = document.getElementById("stepTitle");
+    const stepTextEl = document.getElementById("stepText");
+    const nextBtn = document.getElementById("nextBtn");
+
+    function render() {
+      const step = data.steps[index];
+
+      titleEl.textContent = data.name;
+      stepInfoEl.textContent = `${index + 1} / ${data.steps.length}`;
+      stepTitleEl.textContent = step.title;
+      stepTextEl.textContent = step.text;
+
+      // 最後ならボタン無効化
+      nextBtn.disabled = index === data.steps.length - 1;
     }
+
+    nextBtn.onclick = () => {
+      if (index < data.steps.length - 1) {
+        index++;
+        render();
+      }
+    };
+
+    render();
   </script>
 
 </body>
