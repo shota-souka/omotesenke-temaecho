@@ -68,6 +68,7 @@
       padding: 6px;
       border-bottom: 1px solid #eee;
       font-size: 14px;
+      cursor: pointer;
     }
 
     .step small {
@@ -79,6 +80,25 @@
     .diff {
       background: #ffe5e5;
       border-left: 4px solid #ff4d4d;
+    }
+
+    /* モーダル */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+    }
+
+    .modal-content {
+      background: white;
+      margin: 20% auto;
+      padding: 16px;
+      width: 80%;
+      border-radius: 10px;
     }
   </style>
 </head>
@@ -107,15 +127,26 @@
   <div class="box" id="rightView"></div>
 </div>
 
+<!-- モーダル -->
+<div id="modal" class="modal" onclick="closeModal()">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <h3 id="modalTitle"></h3>
+    <p id="modalText"></p>
+    <small id="modalNote" style="color:#c00;"></small>
+    <br><br>
+    <button onclick="closeModal()">閉じる</button>
+  </div>
+</div>
+
 <script>
 const temaeData = {
   hira: {
     name: "薄茶・平点前",
     steps: [
       { id: 1, title: "席入り", text: "茶室に入る" },
-      { id: 2, title: "茶碗を清める", text: "茶碗を拭く" },
+      { id: 2, title: "茶碗を清める", text: "茶碗を拭く", note: "丸卓や棚点前では省略されることがある" },
       { id: 3, title: "茶筅通し", text: "茶筅を温める" },
-      { id: 4, title: "抹茶を入れる", text: "茶杓で抹茶をすくう" },
+      { id: 4, title: "抹茶を入れる", text: "茶杓で抹茶をすくう", note: "丸卓では手順が簡略化される" },
       { id: 5, title: "点てる", text: "茶を点てる" }
     ]
   },
@@ -126,7 +157,7 @@ const temaeData = {
       { id: 1, title: "席入り", text: "茶室に入る" },
       { id: 2, title: "茶碗を清める", text: "茶碗を拭く" },
       { id: 3, title: "茶筅通し", text: "茶筅を温める" },
-      { id: 4, title: "抹茶を入れる", text: "丸卓では手順が異なる" },
+      { id: 4, title: "抹茶を入れる", text: "丸卓では手順が異なる", note: "平点前と動作順が異なる" },
       { id: 5, title: "点てる", text: "茶を点てる" }
     ]
   },
@@ -135,7 +166,7 @@ const temaeData = {
     name: "薄茶・棚点前",
     steps: [
       { id: 1, title: "席入り", text: "茶室に入る" },
-      { id: 2, title: "道具確認", text: "棚を確認する" },
+      { id: 2, title: "道具確認", text: "棚を確認する", note: "棚構成により手順が変化" },
       { id: 3, title: "茶碗を清める", text: "茶碗を拭く" },
       { id: 4, title: "抹茶を入れる", text: "棚仕様の流れで入れる" },
       { id: 5, title: "点てる", text: "茶を点てる" }
@@ -143,6 +174,7 @@ const temaeData = {
   }
 };
 
+/* 初期化 */
 function init() {
   const left = document.getElementById("left");
   const right = document.getElementById("right");
@@ -166,6 +198,7 @@ function init() {
   setupScrollSync();
 }
 
+/* 描画 */
 function render() {
   const l = document.getElementById("left").value;
   const r = document.getElementById("right").value;
@@ -192,17 +225,21 @@ function render() {
 
     if (ls) {
       leftHTML += `
-        <div class="step ${isDiff ? "diff" : ""}">
+        <div class="step ${isDiff ? "diff" : ""}"
+             onclick='openModal(${JSON.stringify(ls)})'>
           ${ls.id}. ${ls.title}
           <small>${ls.text}</small>
+          ${ls.note ? `<small style="color:#c00;">理由: ${ls.note}</small>` : ""}
         </div>`;
     }
 
     if (rs) {
       rightHTML += `
-        <div class="step ${isDiff ? "diff" : ""}">
+        <div class="step ${isDiff ? "diff" : ""}"
+             onclick='openModal(${JSON.stringify(rs)})'>
           ${rs.id}. ${rs.title}
           <small>${rs.text}</small>
+          ${rs.note ? `<small style="color:#c00;">理由: ${rs.note}</small>` : ""}
         </div>`;
     }
   }
@@ -211,9 +248,7 @@ function render() {
   document.getElementById("rightView").innerHTML = rightHTML;
 }
 
-/* =========================
-   スクロール同期
-========================= */
+/* スクロール同期 */
 function setupScrollSync() {
   const leftView = document.getElementById("leftView");
   const rightView = document.getElementById("rightView");
@@ -233,6 +268,18 @@ function setupScrollSync() {
     leftView.scrollTop = rightView.scrollTop;
     syncing = false;
   });
+}
+
+/* モーダル */
+function openModal(data) {
+  document.getElementById("modalTitle").textContent = data.title;
+  document.getElementById("modalText").textContent = data.text;
+  document.getElementById("modalNote").textContent = data.note ? "理由: " + data.note : "";
+  document.getElementById("modal").style.display = "block";
+}
+
+function closeModal() {
+  document.getElementById("modal").style.display = "none";
 }
 
 document.addEventListener("DOMContentLoaded", init);
