@@ -3,226 +3,79 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>茶道点前 比較アプリ</title>
+  <title>茶道アプリ</title>
 
   <style>
     body {
       font-family: sans-serif;
       margin: 0;
-      padding: 10px;
+      padding: 16px;
       background: #f7f7f7;
     }
 
     h1 {
-      font-size: 18px;
       text-align: center;
-      margin: 8px 0;
+      font-size: 20px;
+      margin-bottom: 20px;
     }
 
-    .selector {
+    .menu {
       display: flex;
-      gap: 8px;
-      margin-bottom: 10px;
+      flex-direction: column;
+      gap: 12px;
     }
 
-    select {
-      flex: 1;
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-    }
-
-    #modeBtn {
-      width: 100%;
-      padding: 10px;
-      font-size: 15px;
-      border: none;
-      border-radius: 10px;
-      background: #333;
-      color: white;
-      margin-bottom: 10px;
-    }
-
-    #container {
-      display: flex;
-      gap: 8px;
-    }
-
-    .column {
-      flex: 1;
-      max-width: 50%;
+    .card {
       background: white;
-      border-radius: 10px;
-      padding: 10px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-      height: 70vh;
-      overflow-y: auto;
-    }
-
-    .step {
-      padding: 8px;
-      border-bottom: 1px solid #eee;
-    }
-
-    .diff {
-      background: #ffe5e5;
-      border-radius: 6px;
-    }
-
-    .step strong {
+      padding: 16px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      text-decoration: none;
+      color: black;
+      font-size: 16px;
       display: block;
-      font-size: 13px;
-      margin-bottom: 2px;
     }
 
-    .step div {
+    .card small {
+      display: block;
       font-size: 12px;
-      color: #333;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    .card:active {
+      transform: scale(0.98);
     }
   </style>
 </head>
 
 <body>
 
-  <h1>点前比較</h1>
+  <h1>茶道アプリ</h1>
 
-  <!-- ★選択UI -->
-  <div class="selector">
-    <select id="selectA"></select>
-    <select id="selectB"></select>
+  <div class="menu">
+
+    <a class="card" href="compare.html">
+      点前比較
+      <small>平点前・丸卓などを比較</small>
+    </a>
+
+    <a class="card" href="temae.html">
+      点前ライブラリ
+      <small>棚・水指・七事式・許状</small>
+    </a>
+
+    <a class="card" href="tools.html">
+      道具アルバム
+      <small>茶碗・茶杓・棗などの写真</small>
+    </a>
+
+    <a class="card" href="kaiki.html">
+      会記（稽古記録）
+      <small>稽古の記録・振り返り</small>
+    </a>
+
   </div>
-
-  <button id="modeBtn">違いだけ表示</button>
-
-  <div id="container">
-    <div class="column" id="left"></div>
-    <div class="column" id="right"></div>
-  </div>
-
-  <script>
-    // =========================
-    // 複数データ（拡張可能）
-    // =========================
-    let temaeData = {};
-
-async function loadData() {
-  const res = await fetch("./data.json");
-  temaeData = await res.json();
-
-  loadData();
-} ,
-
-      maru: {
-        name: "薄茶・丸卓",
-        steps: [
-          { id: 1, title: "席入り", text: "茶室に入る" },
-          { id: 2, title: "茶碗を清める", text: "茶碗を拭く" },
-          { id: 3, title: "茶筅通し", text: "茶筅を温める" },
-          { id: 4, title: "抹茶を入れる", text: "丸卓では手順が異なる" },
-          { id: 5, title: "点てる", text: "茶を点てる" }
-        ]
-      },
-
-      tana: {
-        name: "薄茶・棚点前",
-        steps: [
-          { id: 1, title: "席入り", text: "茶室に入る" },
-          { id: 2, title: "道具確認", text: "棚の道具を確認する" },
-          { id: 3, title: "茶碗を清める", text: "茶碗を拭く" },
-          { id: 4, title: "抹茶を入れる", text: "棚仕様の流れで茶を入れる" },
-          { id: 5, title: "点てる", text: "茶を点てる" }
-        ]
-      }
-    };
-
-    let diffOnly = false;
-
-    const selectA = document.getElementById("selectA");
-    const selectB = document.getElementById("selectB");
-
-    // セレクト初期化
-    function initSelects() {
-      Object.keys(temaeData).forEach(key => {
-        const opt1 = document.createElement("option");
-        opt1.value = key;
-        opt1.textContent = temaeData[key].name;
-        selectA.appendChild(opt1);
-
-        const opt2 = document.createElement("option");
-        opt2.value = key;
-        opt2.textContent = temaeData[key].name;
-        selectB.appendChild(opt2);
-      });
-
-      selectA.value = "hira";
-      selectB.value = "maru";
-    }
-
-    function isDifferent(a, b) {
-      if (!a || !b) return true;
-      return a.title !== b.title || a.text !== b.text;
-    }
-
-    function render() {
-      const dataA = temaeData[selectA.value];
-      const dataB = temaeData[selectB.value];
-
-      const left = document.getElementById("left");
-      const right = document.getElementById("right");
-
-      left.innerHTML = "";
-      right.innerHTML = "";
-
-      const titleA = document.createElement("h2");
-      titleA.textContent = dataA.name;
-      left.appendChild(titleA);
-
-      const titleB = document.createElement("h2");
-      titleB.textContent = dataB.name;
-      right.appendChild(titleB);
-
-      const maxLen = Math.max(dataA.steps.length, dataB.steps.length);
-
-      for (let i = 0; i < maxLen; i++) {
-        const a = dataA.steps[i];
-        const b = dataB.steps[i];
-
-        const diff = isDifferent(a, b);
-
-        if (diffOnly && !diff) continue;
-
-        const divA = document.createElement("div");
-        const divB = document.createElement("div");
-
-        divA.className = "step" + (diff ? " diff" : "");
-        divB.className = "step" + (diff ? " diff" : "");
-
-        divA.innerHTML = a
-          ? `<strong>${a.id}. ${a.title}</strong><div>${a.text}</div>`
-          : `<em>なし</em>`;
-
-        divB.innerHTML = b
-          ? `<strong>${b.id}. ${b.title}</strong><div>${b.text}</div>`
-          : `<em>なし</em>`;
-
-        left.appendChild(divA);
-        right.appendChild(divB);
-      }
-    }
-
-    document.getElementById("modeBtn").onclick = () => {
-      diffOnly = !diffOnly;
-      document.getElementById("modeBtn").textContent =
-        diffOnly ? "全表示に戻す" : "違いだけ表示";
-      render();
-    };
-
-    selectA.onchange = render;
-    selectB.onchange = render;
-
-    initSelects();
-    render();
-  </script>
 
 </body>
 </html>
