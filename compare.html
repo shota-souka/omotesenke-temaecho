@@ -154,11 +154,10 @@ function init() {
   right.value = "maru";
 
   render();
-}
-
 function render() {
   const l = document.getElementById("left").value;
   const r = document.getElementById("right").value;
+  const diffOnly = document.getElementById("diffOnly").checked;
 
   const leftData = temaeData[l];
   const rightData = temaeData[r];
@@ -172,21 +171,23 @@ function render() {
     const ls = leftData.steps[i];
     const rs = rightData.steps[i];
 
-    const leftDiff =
-      !rs || ls.title !== rs.title || ls.text !== rs.text;
+    const isDiff =
+      !ls || !rs ||
+      ls.title !== rs.title ||
+      ls.text !== rs.text;
 
-    const rightDiff =
-      !ls || ls.title !== rs.title || ls.text !== rs.text;
+    // 👉 違いだけ表示モードならスキップ
+    if (diffOnly && !isDiff) continue;
 
     leftHTML += ls
-      ? `<div class="step ${leftDiff ? "diff" : ""}">
+      ? `<div class="step ${isDiff ? "diff" : ""}">
           ${ls.id}. ${ls.title}
           <small>${ls.text}</small>
         </div>`
       : "";
 
     rightHTML += rs
-      ? `<div class="step ${rightDiff ? "diff" : ""}">
+      ? `<div class="step ${isDiff ? "diff" : ""}">
           ${rs.id}. ${rs.title}
           <small>${rs.text}</small>
         </div>`
