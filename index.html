@@ -8,37 +8,66 @@
   <style>
     body {
       font-family: sans-serif;
-      text-align: center;
-      padding: 20px;
+      margin: 0;
+      padding: 12px;
+      background: #f7f7f7;
     }
 
+    h1 {
+      font-size: 20px;
+      text-align: center;
+      margin: 10px 0;
+    }
+
+    #modeBtn {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: none;
+      border-radius: 10px;
+      background: #333;
+      color: white;
+      margin-bottom: 12px;
+    }
+
+    /* スマホは縦1列 */
     #container {
       display: flex;
+      flex-direction: column;
       gap: 12px;
-      margin-top: 20px;
     }
 
     .column {
-      flex: 1;
-      border: 1px solid #ddd;
+      background: white;
       border-radius: 12px;
       padding: 12px;
-      text-align: left;
-      background: #fafafa;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
     }
 
     h2 {
-      font-size: 18px;
-      margin-bottom: 10px;
+      font-size: 16px;
+      margin: 8px 0;
     }
 
     .step {
-      padding: 8px;
+      padding: 10px;
       border-bottom: 1px solid #eee;
+    }
+
+    .step strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .step div {
+      font-size: 13px;
+      color: #333;
     }
 
     .diff {
       background: #ffe5e5;
+      border-radius: 6px;
     }
   </style>
 </head>
@@ -46,6 +75,7 @@
 <body>
 
   <h1>点前比較</h1>
+  <button id="modeBtn">違いだけ表示</button>
 
   <div id="container">
     <div class="column" id="left"></div>
@@ -53,7 +83,6 @@
   </div>
 
   <script>
-    // データ①
     const dataA = {
       name: "薄茶・平点前",
       steps: [
@@ -65,25 +94,24 @@
       ]
     };
 
-    // データ②
     const dataB = {
       name: "薄茶・丸卓",
       steps: [
         { id: 1, title: "席入り", text: "茶室に入る" },
         { id: 2, title: "茶碗を清める", text: "茶碗を拭く" },
         { id: 3, title: "茶筅通し", text: "茶筅を温める" },
-        { id: 4, title: "抹茶を入れる", text: "丸卓では手順が少し異なる" },
+        { id: 4, title: "抹茶を入れる", text: "丸卓では手順が異なる" },
         { id: 5, title: "点てる", text: "茶を点てる" }
       ]
     };
 
-    // 比較関数
+    let diffOnly = false;
+
     function isDifferent(a, b) {
       if (!a || !b) return true;
       return a.title !== b.title || a.text !== b.text;
     }
 
-    // 描画
     function render() {
       const left = document.getElementById("left");
       const right = document.getElementById("right");
@@ -91,7 +119,6 @@
       left.innerHTML = "";
       right.innerHTML = "";
 
-      // タイトル
       const titleA = document.createElement("h2");
       titleA.textContent = dataA.name;
       left.appendChild(titleA);
@@ -108,16 +135,18 @@
 
         const diff = isDifferent(a, b);
 
-        // 左
+        if (diffOnly && !diff) continue;
+
         const divA = document.createElement("div");
+        const divB = document.createElement("div");
+
         divA.className = "step" + (diff ? " diff" : "");
+        divB.className = "step" + (diff ? " diff" : "");
+
         divA.innerHTML = a
           ? `<strong>${a.id}. ${a.title}</strong><div>${a.text}</div>`
           : `<em>なし</em>`;
 
-        // 右
-        const divB = document.createElement("div");
-        divB.className = "step" + (diff ? " diff" : "");
         divB.innerHTML = b
           ? `<strong>${b.id}. ${b.title}</strong><div>${b.text}</div>`
           : `<em>なし</em>`;
@@ -126,6 +155,13 @@
         right.appendChild(divB);
       }
     }
+
+    document.getElementById("modeBtn").onclick = () => {
+      diffOnly = !diffOnly;
+      document.getElementById("modeBtn").textContent =
+        diffOnly ? "全表示に戻す" : "違いだけ表示";
+      render();
+    };
 
     render();
   </script>
