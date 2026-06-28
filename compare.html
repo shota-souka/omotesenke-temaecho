@@ -30,23 +30,141 @@
       font-size: 18px;
       margin: 0;
     }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    select, button {
+      padding: 6px;
+      font-size: 14px;
+    }
+
+    .wrap {
+      display: flex;
+      gap: 10px;
+    }
+
+    .box {
+      flex: 1;
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+      min-height: 300px;
+    }
+
+    .step {
+      padding: 6px;
+      border-bottom: 1px solid #eee;
+      font-size: 14px;
+    }
+
+    .step small {
+      display: block;
+      color: #666;
+      font-size: 12px;
+    }
   </style>
 </head>
 
 <body>
 
-  <header>
-    <h1>点前比較</h1>
-    <a href="index.html">← ホーム</a>
-  </header>
+<header>
+  <h1>点前比較</h1>
+  <a href="index.html">← ホーム</a>
+</header>
 
-  <!-- ↓↓↓ ここに「今動いている比較アプリ」を丸ごと貼る ↓↓↓ -->
+<div class="controls">
+  <select id="left"></select>
+  <select id="right"></select>
+  <button onclick="render()">比較</button>
+</div>
 
+<div class="wrap">
+  <div class="box" id="leftView"></div>
+  <div class="box" id="rightView"></div>
+</div>
 
-  <!-- JSも今はそのまま貼ってOK（後で分離） -->
-  <script>
-    // ここに今の比較アプリJSを全部コピペ
-  </script>
+<script>
+const temaeData = {
+  hira: {
+    name: "薄茶・平点前",
+    steps: [
+      { id: 1, title: "席入り", text: "茶室に入る" },
+      { id: 2, title: "茶碗を清める", text: "茶碗を拭く" },
+      { id: 3, title: "茶筅通し", text: "茶筅を温める" },
+      { id: 4, title: "抹茶を入れる", text: "茶杓で抹茶をすくう" },
+      { id: 5, title: "点てる", text: "茶を点てる" }
+    ]
+  },
+
+  maru: {
+    name: "薄茶・丸卓",
+    steps: [
+      { id: 1, title: "席入り", text: "茶室に入る" },
+      { id: 2, title: "茶碗を清める", text: "茶碗を拭く" },
+      { id: 3, title: "茶筅通し", text: "茶筅を温める" },
+      { id: 4, title: "抹茶を入れる", text: "丸卓では手順が異なる" },
+      { id: 5, title: "点てる", text: "茶を点てる" }
+    ]
+  },
+
+  tana: {
+    name: "薄茶・棚点前",
+    steps: [
+      { id: 1, title: "席入り", text: "茶室に入る" },
+      { id: 2, title: "道具確認", text: "棚を確認する" },
+      { id: 3, title: "茶碗を清める", text: "茶碗を拭く" },
+      { id: 4, title: "抹茶を入れる", text: "棚仕様の流れで入れる" },
+      { id: 5, title: "点てる", text: "茶を点てる" }
+    ]
+  }
+};
+
+function init() {
+  const left = document.getElementById("left");
+  const right = document.getElementById("right");
+
+  Object.keys(temaeData).forEach(key => {
+    const opt1 = document.createElement("option");
+    opt1.value = key;
+    opt1.textContent = temaeData[key].name;
+    left.appendChild(opt1);
+
+    const opt2 = document.createElement("option");
+    opt2.value = key;
+    opt2.textContent = temaeData[key].name;
+    right.appendChild(opt2);
+  });
+
+  left.value = "hira";
+  right.value = "maru";
+
+  render();
+}
+
+function render() {
+  const l = document.getElementById("left").value;
+  const r = document.getElementById("right").value;
+
+  const leftData = temaeData[l];
+  const rightData = temaeData[r];
+
+  document.getElementById("leftView").innerHTML =
+    leftData.steps.map(s =>
+      `<div class="step">${s.id}. ${s.title}<small>${s.text}</small></div>`
+    ).join("");
+
+  document.getElementById("rightView").innerHTML =
+    rightData.steps.map(s =>
+      `<div class="step">${s.id}. ${s.title}<small>${s.text}</small></div>`
+    ).join("");
+}
+
+document.addEventListener("DOMContentLoaded", init);
+</script>
 
 </body>
-</html>
+</html> 
