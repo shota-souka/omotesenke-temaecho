@@ -19,6 +19,19 @@
       margin: 8px 0;
     }
 
+    .selector {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    select {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
     #modeBtn {
       width: 100%;
       padding: 10px;
@@ -42,24 +55,13 @@
       border-radius: 10px;
       padding: 10px;
       box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-      height: 80vh;
+      height: 70vh;
       overflow-y: auto;
-      overflow-wrap: break-word;
-    }
-
-    h2 {
-      font-size: 14px;
-      margin: 6px 0;
     }
 
     .step {
       padding: 8px;
       border-bottom: 1px solid #eee;
-      cursor: pointer;
-    }
-
-    .step:hover {
-      background: #f0f0f0;
     }
 
     .diff {
@@ -67,36 +69,15 @@
       border-radius: 6px;
     }
 
-    /* ===== モーダル ===== */
-    #modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.5);
-      justify-content: center;
-      align-items: center;
+    .step strong {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 2px;
     }
 
-    #modalContent {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      width: 80%;
-      max-width: 300px;
-      text-align: left;
-    }
-
-    #closeBtn {
-      margin-top: 10px;
-      padding: 8px;
-      width: 100%;
-      border: none;
-      background: #333;
-      color: white;
-      border-radius: 8px;
+    .step div {
+      font-size: 12px;
+      color: #333;
     }
   </style>
 </head>
@@ -104,6 +85,13 @@
 <body>
 
   <h1>点前比較</h1>
+
+  <!-- ★選択UI -->
+  <div class="selector">
+    <select id="selectA"></select>
+    <select id="selectB"></select>
+  </div>
+
   <button id="modeBtn">違いだけ表示</button>
 
   <div id="container">
@@ -111,57 +99,77 @@
     <div class="column" id="right"></div>
   </div>
 
-  <!-- モーダル -->
-  <div id="modal">
-    <div id="modalContent">
-      <h3 id="modalTitle"></h3>
-      <p id="modalText"></p>
-      <button id="closeBtn">閉じる</button>
-    </div>
-  </div>
-
   <script>
-    const dataA = {
-      name: "薄茶・平点前",
-      steps: [
-        { id: 1, title: "席入り", text: "茶室に入る" },
-        { id: 2, title: "茶碗を清める", text: "茶碗を拭く" },
-        { id: 3, title: "茶筅通し", text: "茶筅を温める" },
-        { id: 4, title: "抹茶を入れる", text: "茶杓で抹茶をすくう" },
-        { id: 5, title: "点てる", text: "茶を点てる" }
-      ]
-    };
+    // =========================
+    // 複数データ（拡張可能）
+    // =========================
+    const temaeData = {
+      hira: {
+        name: "薄茶・平点前",
+        steps: [
+          { id: 1, title: "席入り", text: "茶室に入る" },
+          { id: 2, title: "茶碗を清める", text: "茶碗を拭く" },
+          { id: 3, title: "茶筅通し", text: "茶筅を温める" },
+          { id: 4, title: "抹茶を入れる", text: "茶杓で抹茶をすくう" },
+          { id: 5, title: "点てる", text: "茶を点てる" }
+        ]
+      },
 
-    const dataB = {
-      name: "薄茶・丸卓",
-      steps: [
-        { id: 1, title: "席入り", text: "茶室に入る" },
-        { id: 2, title: "茶碗を清める", text: "茶碗を拭く" },
-        { id: 3, title: "茶筅通し", text: "茶筅を温める" },
-        { id: 4, title: "抹茶を入れる", text: "丸卓では手順が異なる" },
-        { id: 5, title: "点てる", text: "茶を点てる" }
-      ]
+      maru: {
+        name: "薄茶・丸卓",
+        steps: [
+          { id: 1, title: "席入り", text: "茶室に入る" },
+          { id: 2, title: "茶碗を清める", text: "茶碗を拭く" },
+          { id: 3, title: "茶筅通し", text: "茶筅を温める" },
+          { id: 4, title: "抹茶を入れる", text: "丸卓では手順が異なる" },
+          { id: 5, title: "点てる", text: "茶を点てる" }
+        ]
+      },
+
+      tana: {
+        name: "薄茶・棚点前",
+        steps: [
+          { id: 1, title: "席入り", text: "茶室に入る" },
+          { id: 2, title: "道具確認", text: "棚の道具を確認する" },
+          { id: 3, title: "茶碗を清める", text: "茶碗を拭く" },
+          { id: 4, title: "抹茶を入れる", text: "棚仕様の流れで茶を入れる" },
+          { id: 5, title: "点てる", text: "茶を点てる" }
+        ]
+      }
     };
 
     let diffOnly = false;
+
+    const selectA = document.getElementById("selectA");
+    const selectB = document.getElementById("selectB");
+
+    // セレクト初期化
+    function initSelects() {
+      Object.keys(temaeData).forEach(key => {
+        const opt1 = document.createElement("option");
+        opt1.value = key;
+        opt1.textContent = temaeData[key].name;
+        selectA.appendChild(opt1);
+
+        const opt2 = document.createElement("option");
+        opt2.value = key;
+        opt2.textContent = temaeData[key].name;
+        selectB.appendChild(opt2);
+      });
+
+      selectA.value = "hira";
+      selectB.value = "maru";
+    }
 
     function isDifferent(a, b) {
       if (!a || !b) return true;
       return a.title !== b.title || a.text !== b.text;
     }
 
-    function openModal(step) {
-      const modal = document.getElementById("modal");
-      document.getElementById("modalTitle").textContent = step.title;
-      document.getElementById("modalText").textContent = step.text;
-      modal.style.display = "flex";
-    }
-
-    document.getElementById("closeBtn").onclick = () => {
-      document.getElementById("modal").style.display = "none";
-    };
-
     function render() {
+      const dataA = temaeData[selectA.value];
+      const dataB = temaeData[selectB.value];
+
       const left = document.getElementById("left");
       const right = document.getElementById("right");
 
@@ -200,10 +208,6 @@
           ? `<strong>${b.id}. ${b.title}</strong><div>${b.text}</div>`
           : `<em>なし</em>`;
 
-        // ★クリックでモーダル
-        if (a) divA.onclick = () => openModal(a);
-        if (b) divB.onclick = () => openModal(b);
-
         left.appendChild(divA);
         right.appendChild(divB);
       }
@@ -216,28 +220,11 @@
       render();
     };
 
+    selectA.onchange = render;
+    selectB.onchange = render;
+
+    initSelects();
     render();
-
-    // スクロール同期
-    const left = document.getElementById("left");
-    const right = document.getElementById("right");
-
-    let isSyncingLeft = false;
-    let isSyncingRight = false;
-
-    left.addEventListener("scroll", () => {
-      if (isSyncingLeft) return;
-      isSyncingRight = true;
-      right.scrollTop = left.scrollTop;
-      setTimeout(() => isSyncingRight = false, 10);
-    });
-
-    right.addEventListener("scroll", () => {
-      if (isSyncingRight) return;
-      isSyncingLeft = true;
-      left.scrollTop = right.scrollTop;
-      setTimeout(() => isSyncingLeft = false, 10);
-    });
   </script>
 
 </body>
