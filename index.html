@@ -103,17 +103,14 @@
     // =========================
     // 複数データ（拡張可能）
     // =========================
-    const temaeData = {
-      hira: {
-        name: "薄茶・平点前",
-        steps: [
-          { id: 1, title: "席入り", text: "茶室に入る" },
-          { id: 2, title: "茶碗を清める", text: "茶碗を拭く" },
-          { id: 3, title: "茶筅通し", text: "茶筅を温める" },
-          { id: 4, title: "抹茶を入れる", text: "茶杓で抹茶をすくう" },
-          { id: 5, title: "点てる", text: "茶を点てる" }
-        ]
-      },
+    let temaeData = {};
+
+async function loadData() {
+  const res = await fetch("./data.json");
+  temaeData = await res.json();
+
+  loadData();
+} ,
 
       maru: {
         name: "薄茶・丸卓",
